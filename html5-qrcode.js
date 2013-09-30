@@ -16,10 +16,10 @@ function showQRCode(text) {
 
   
   var dotsize = 5;  // size of box drawn on canvas
-  var padding = 10; // (white area around your QRCode)
+  var padding = (2*dotsize); // (white area around your QRCode)
   var black = "rgb(0,0,0)";
   var white = "rgb(255,255,255)";
-  var QRCodeVersion = 15; // 1-40 see http://www.denso-wave.com/qrcode/qrgene2-e.html
+  var QRCodeVersion = 10; // 1-40 see http://www.denso-wave.com/qrcode/qrgene2-e.html
 	
 	var canvas=document.createElement('canvas');
 	var qrCanvasContext = canvas.getContext('2d');
@@ -28,7 +28,7 @@ function showQRCode(text) {
     // Higher levels improves error correction capability while decreasing the amount of data QR Code size.
     // QRErrorCorrectLevel.L (5%) QRErrorCorrectLevel.M (15%) QRErrorCorrectLevel.Q (25%) QRErrorCorrectLevel.H (30%)
     // eg. L can survive approx 5% damage...etc.
-    var qr = new QRCode(QRCodeVersion, QRErrorCorrectLevel.L); 
+    var qr = new QRCode(QRCodeVersion, QRErrorCorrectLevel.H); 
    	qr.addData(text);
    	qr.make();
    }
@@ -42,16 +42,17 @@ function showQRCode(text) {
   var qrsize = qr.getModuleCount();
  	canvas.setAttribute('height',(qrsize * dotsize) + padding);
  	canvas.setAttribute('width',(qrsize * dotsize) + padding);
+        qrCanvasContext.fillStyle = white;
+        qrCanvasContext.fillRect(0,0,canvas.width,canvas.height);
  	var shiftForPadding = padding/2;
  	if (canvas.getContext){
  		for (var r = 0; r < qrsize; r++) {
  			for (var c = 0; c < qrsize; c++) {
- 				if (qr.isDark(r, c))
+ 				if (qr.isDark(r, c)){
  					qrCanvasContext.fillStyle = black;  
- 				else
- 					qrCanvasContext.fillStyle = white;  
- 				qrCanvasContext.fillRect ((c*dotsize) +shiftForPadding,(r*dotsize) + shiftForPadding,dotsize,dotsize);   // x, y, w, h
- 			}	
+ 				        qrCanvasContext.fillRect ((c*dotsize) +shiftForPadding,(r*dotsize) + shiftForPadding,dotsize,dotsize);   // x, y, w, h
+                            }
+                        }	
  		}
  	}
 
