@@ -57,7 +57,7 @@ QRCode.prototype = {
 		this.dataList.push(newData);
 		this.dataCache = null;
 	},
-	
+
 	isDark : function(row, col) {
 		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
 			throw new Error(row + "," + col);
@@ -70,9 +70,39 @@ QRCode.prototype = {
 	},
 	
 	make : function() {
-		this.makeImpl(false, this.getBestMaskPattern() );
+	    this.makeImpl(false, this.getBestMaskPattern() );
 	},
-	
+
+        changeSize : function() {
+                var type = this.changeQRCodeVersion(this.typeNumber, this.errorCorrectLevel, this.dataList);
+                this.typeNumber = type;
+                return this.typeNumber;
+        },
+        
+        changeQRCodeVersion : function(typeNumber, errorCorrectLevel, dataList) {
+            while (typeNumber < 40) {
+                var buffer = new QRBitBuffer();
+                for (var i = 0; i < dataList.length; i++) {
+                    var data = this.dataList[i];
+                    buffer.put(data.mode, 4);
+                    buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+                    data.write(buffer);
+                }
+                var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+                var totalDataCount = 0;
+                for (var i = 0; i < rsBlocks.length; i++) {
+                    totalDataCount += rsBlocks[i].dataCount;
+                }
+                if (buffer.getLengthInBits()>(totalDataCount*8)){
+                    typeNumber++;
+                }
+                else{
+                    return typeNumber; 
+                }
+            }
+            return typeNumber;
+        },
+
 	makeImpl : function(test, maskPattern) {
 		
 		this.moduleCount = this.typeNumber * 4 + 17;
